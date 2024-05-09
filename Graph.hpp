@@ -10,6 +10,7 @@ namespace ariel {
 class Graph {
     vector<vector<int>> adjMatrix;
 public:
+    Graph();  // Constructor
     // Function to load the graph from a given input
     void loadGraph(const vector<vector<int>>& inputMatrix);
     

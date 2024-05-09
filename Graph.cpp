@@ -6,7 +6,7 @@ using namespace std;
 namespace ariel{
 
 vector<vector<int>> adjMatrix;
-
+    Graph::Graph(){}
     // Function to load the graph from a given input
     void Graph::loadGraph(const vector<vector<int>>& inputMatrix) {
         // Check if the matrix is square
