@@ -1,6 +1,8 @@
+//ID - 208768978
+//GMAIL - michibinyamin@gmail.com
+
 #include "Graph.hpp"
 #include <iostream>
-// Namespaces and includes are in the header file
 using namespace std;
 
 namespace ariel{
