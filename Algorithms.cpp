@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <climits>
+#include <stack>
 
 using namespace std;
 namespace ariel {
@@ -118,7 +119,7 @@ string Algorithms::shortestPath(const Graph& g, int start, int end) {
     if (no_negative_cycle)
     {
         // If the end vertex is not -1 then there is a path
-        if(pred[end] == -1){    
+        if(pred[end] == -1){
             return "-1";
         }
         string path = to_string(end);   // Add the end to the string
@@ -131,19 +132,147 @@ string Algorithms::shortestPath(const Graph& g, int start, int end) {
             }   
         }
     }
-    return "";
+    return "-1";
 }
 
+bool dfsC(vector<vector<int>> g, int t, vector<int>& visited, vector<int>& cycle_stack) {
+    // Mark the current vertex as investigating - grey
+    visited[t] = 1;
+    cycle_stack.push_back(t);
+
+    for (int i = 0; i < g.size(); i++)
+    {
+        if (g[t][i] != 0) // 0 means there is no path, makes sure it also has not been visited
+        {
+            // Check for back edge
+            if (visited[i] == 1)
+            {
+                // print the vertecies who are in the cycle by poping them out all the way back to the start
+                string route = to_string(i);
+                while (cycle_stack.back()!=i)
+                {
+                    route = to_string(cycle_stack.back())+"->"+route;
+                    cycle_stack.pop_back();
+                }
+                route = to_string(i) +"->"+route;
+                cout << "Cycle detected : "+route+"\n";
+                return true;
+            }
+            // Call on the connected vertex
+            if (dfsC(g, i, visited, cycle_stack)) 
+            {
+                return true;
+            }   
+        }
+    }
+    // Remove the current vertex from the recursion stack as we backtrack
+    visited[t] = 2; // Vertex black
+    cycle_stack.pop_back(); // Remove element from stack
+    return false;
+}
 // Function to check if the graph contains a cycle
-int Algorithms::isContainsCycle(const Graph& g) {
-    return 1;
-    // Function implementation goes here
+bool Algorithms::isContainsCycle(const Graph& g) {
+    vector<vector<int>> graph = g.getg();
+    int n = graph.size();
+    // 0 - white, 1 - grey, 2 - black
+    vector<int> visited(n, 0);
+    
+    // Perform DFS from each unvisited node
+    for (int i = 0; i < n; i++) {
+        vector<int> cycle_stack;
+        if (visited[i] == 0) {
+            if (dfsC(graph, i, visited, cycle_stack)){
+                // Cycle detected
+                return true;
+            }
+        }
+    }
+    cout << "No cycle detected\n";
+    // No cycle detected
+    return false;
+}
+
+bool isBipartiteDFS(vector<vector<int>>& graph, int current, vector<int>& visited, vector<int>& group_A, vector<int>& group_B, int group_num){
+    // numbers for dividing into two groups
+    visited[current] = group_num;    // Mark group
+    // Add to the correct group
+    if (group_num == 0)
+    {
+        group_A.push_back(current);
+    }
+    else{
+        group_B.push_back(current);
+    }
+
+    for (int i = 0; i < graph.size(); i++)
+    {
+        if (graph[current][i]!=0)
+        {
+            if (visited[i]==-1) // Has not been visited
+            {
+                if (!isBipartiteDFS(graph, i, visited, group_A, group_B, 1-group_num)) {
+                    return false; // If any recursive DFS call returns false, the graph is not bipartite
+                }
+            }
+            else if (visited[i]==visited[current])  // Has the same color as the neighbor
+            {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 // Function to check if the graph is bipartite
 string Algorithms::isBipartite(const Graph& g) {
-    return "1";
-    // Function implementation goes here
+    vector<vector<int>> graph = g.getg();
+    // Turn graph to an undirected graph so we can do dfs coloring (i will put wights - 1 becuase we dont care)
+    // If there is a directed edge from one to another then make a directed edge back. we can find the bipartite 
+    // on this graph and that will include the original directed graph.
+    for (int i = 0; i < graph.size(); i++)
+    {
+        for (int j = 0; j < graph.size(); j++)
+        {
+            if (graph[i][j]!=0 || graph[j][i]!=0)
+            {
+                graph[i][j] = 1;
+                graph[j][i] = 1;
+            }
+        }
+    }
+
+    vector<int> group_A;
+    vector<int> group_B;
+    vector<int> visited(graph.size(), -1);
+    // Use dfs to traverse throgh neighbors
+    for (int i = 0; i < graph.size(); i++)
+    {
+        if (visited[i] == -1) {
+            if (!isBipartiteDFS(graph, i, visited, group_A, group_B, 0)){
+                // graph is not bipertite
+                return "0";
+            }
+        }
+    }
+    
+    string groups = "The graph is bipartite: A={";
+    for (int i = 0; i < group_A.size(); i++)
+    {
+        groups = groups + to_string(group_A[i]);
+        if (i < group_A.size() - 1) {
+        groups += ",";
+        }
+    }
+    groups = groups + "}, B={";
+    for (int i = 0; i < group_B.size(); i++)
+    {
+        groups = groups + to_string(group_B[i]);
+        if (i < group_B.size() - 1) {
+        groups += ",";
+        }
+    }
+    groups = groups + "}";
+    return groups;
 }
 
 // Function to find a negative cycle in the graph
@@ -155,7 +284,7 @@ void Algorithms::negativeCycle(const Graph& g) {
     bool no_negative_cycle = bellmanFord(graph, 0, dist, pred);   // Call bellmanFord on first vertex
     if (no_negative_cycle)
     {
-        cout << "No negative cycle";
+        cout << "No negative cycle\n";
         return;
     }
 
@@ -178,7 +307,7 @@ void Algorithms::negativeCycle(const Graph& g) {
         path = to_string(pred[trace])+"->"+path;  // Add another trace to the string
         trace = pred[trace];
         if(trace == vertex){
-            cout << path;
+            cout <<"negative cycle found : "<< path<<"\n";
             return;
         }
     }
