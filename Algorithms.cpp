@@ -147,25 +147,29 @@ string isContainsCycleDFC(vector<vector<int>> g, int t, vector<int>& visited, ve
     {
         if (g[t][i] != 0) // 0 means there is no path, makes sure it also has not been visited
         {
-            // Check for back edge
-            if (visited[i] == 1)
-            {
-                // print the vertecies who are in the cycle by poping them out all the way back to the start
-                string route = to_string(i);
-                while (cycle_stack.back()!=i)
+            // If not visited vertex
+            if(visited[i] != 2){
+                // Check for back edge
+                if (visited[i] == 1)
                 {
-                    route = to_string(cycle_stack.back())+"->"+route;
-                    cycle_stack.pop_back();
+                    // print the vertecies who are in the cycle by poping them out all the way back to the start
+                    string route = to_string(i);
+                    while (cycle_stack.back()!=i)
+                    {
+                        route = to_string(cycle_stack.back())+"->"+route;
+                        cycle_stack.pop_back();
+                    }
+                    route = to_string(i) +"->"+route;
+                    return route;
                 }
-                route = to_string(i) +"->"+route;
-                return route;
-            }
-            string route = isContainsCycleDFC(g, i, visited, cycle_stack);
-            // Call on the connected vertex
-            if (route!="0") 
-            {
-                return route;
-            }   
+                // else case - it is white : 
+                string route = isContainsCycleDFC(g, i, visited, cycle_stack);
+                // Call on the connected vertex
+                if (route!="0") 
+                {
+                    return route;
+                }  
+            } 
         }
     }
     // Remove the current vertex from the recursion stack as we backtrack
