@@ -49,6 +49,8 @@ if there were no negative cycles then it returns "no negative cycle"
 
 - in the graph.hpp i made a empty default constructor becuase the matrix is initialized in the loadGraph
 
+- i removed the -Wsign-conversion flag because it was unnecessary, there were no conversions between signed-to-unsigned int
+
 END
 
 
